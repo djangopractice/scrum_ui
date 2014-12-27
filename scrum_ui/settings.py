@@ -83,6 +83,8 @@ TEMPLATE_DIRS = (
 # Environment specific settings
 ENVIRONMENT = os.environ.get('ENVIRONMENT', 'development')
 if ENVIRONMENT == 'development':
-    API_BASE = 'http://localhost:8000/api/v1'
+    API_ROOT = 'http://localhost:8000/api/v1'
+    API_TOKEN = 'http://localhost:8000/api/token/'
 elif ENVIRONMENT == 'production':
-    API_BASE = 'https://production-hostname/api/v1'
+    API_ROOT = 'https://production-hostname/api/v1'
+    API_TOKEN = 'https://production-hostname/api/token/'
