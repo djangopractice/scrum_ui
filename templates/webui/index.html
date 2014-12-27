@@ -8,6 +8,7 @@
     <meta name="description" content="" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="{% static 'webui/vendor/normalize.css' %}" />
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Lato:300,400,700,900" />
     <link rel="stylesheet" href="{% static 'webui/css/site.css' %}" />
     <script type="text/html" id="home-template">
         <h2>Your Sprints</h2>
@@ -32,6 +33,18 @@
             <label for="id_password">Password</label>
             <input id="id_password" type="password" name="password" required />
             <button type="submit">Login</button>
+        </form>
+    </script>
+    <script type="text/html" id="new-sprint-template">
+        <form action="" method="post">
+            <label for="id_name">Sprint Name</label>
+            <input id="id_name" type="text" name="name" maxlength="100" required />
+            <label for="id_end">End Date</label>
+            <input id="id_end" type="date" name="end" />
+            <label for="id_description">Description</label>
+            <textarea id="id_description" name="description" cols="50" />
+            <button type="cancel">Cancel</button>
+            <button type="submit">Create</button>
         </form>
     </script>
     <script type="text/html" id="header-template">
