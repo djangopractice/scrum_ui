@@ -17,8 +17,8 @@
                 <% _.each(sprints.models, function (sprint) { %>
                     <a href="#sprint/<%- sprint.get('id') %>" class="sprint">
                         <%- sprint.get('name') %>
-                    </a>
                         <span>DUE <%- sprint.get('end') %></span><br />
+                    </a>
                 <% }); %>
             </div>
         <% } else { %>
