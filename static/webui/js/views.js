@@ -74,6 +74,28 @@
         },
         getContext: function () {
             return {sprint: this.sprint, title: this.title};
+        },
+        addTask: function (view) {
+            $('.list', this.$el).append(view.el);
+        }
+    });
+
+    var TaskItemView = TemplateView.extend({
+        tagName: 'div',
+        className: 'task-item',
+        templateName: '#task-item-template',
+        initialize: function (options) {
+            TemplateView.prototype.initialize.apply(this, arguments);
+            this.task = options.task;
+            this.task.on('change', this.render, this);
+            this.task.on('remove', this.remove, this);
+        },
+        getContext: function () {
+            return {task: this.task};
+        },
+        render: function () {
+            TemplateView.prototype.render.apply(this, arguments);
+            this.$el.css('order', this.task.get('order'));
         }
     });
 
@@ -107,7 +129,7 @@
             TemplateView.prototype.initialize.apply(this, arguments);
             this.sprintId = options.sprintId;
             this.sprint = null;
-            this.tasks = [];
+            this.tasks = {};
             this.statuses = {
                 unassigned: new StatusView({sprint: null, status: 1, title: 'Backlog'}),
                 todo: new StatusView({sprint: this.sprintId, status: 1, title: 'Not Started'}),
@@ -143,22 +165,26 @@
                 view.delegateEvents();
                 view.render()
             }, this);
-            _.each(this.tasks, function (task) {
-                this.renderTask(task) 
+            _.each(this.tasks, function (view, taskId) {
+                var task = app.tasks.get(taskId);
+                view.remove();
+                this.tasks[taskId] = this.renderTask(task);
             }, this);
         },
         addTask: function (task) {
             if (task.inBacklog() || task.inSprint(this.sprint)) {
-                    this.tasks[task.get('id')] = task;
-                    this.renderTask(task);
+                this.tasks[task.get('id')] = this.renderTask(task);
             }
         },
         renderTask: function (task) {
-            var column = task.statusClass();
-            var container = this.statuses[column];
-            var template = _.template('<div><%- taskName %></div>');
-            var html = template({taskName: task.get('name')});
-            $('.list', container.$el).append(html);
+            var view = new TaskItemView({task: task});
+            _.each(this.statuses, function (container, name) {
+                if (container.sprint == task.get('sprint') && container.status == task.get('status')) {
+                    container.addTask(view);
+                }  
+            });
+            view.render();
+            return view;
         }
     });
 

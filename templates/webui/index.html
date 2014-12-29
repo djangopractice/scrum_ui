@@ -61,6 +61,9 @@
             <ha class="loading">Loading...</h1>
         <% } %>
     </script>
+    <script type="text/html" id="task-item-template">
+        <%- task.get('name') %>
+    </script>
     <script type="text/html" id="status-template">
         <h4><%- title %></h4>
         <div class="list"></div>
