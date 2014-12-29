@@ -84,6 +84,7 @@
         tagName: 'div',
         className: 'task-item',
         templateName: '#task-item-template',
+        events: {'click': 'details'},
         initialize: function (options) {
             TemplateView.prototype.initialize.apply(this, arguments);
             this.task = options.task;
@@ -96,6 +97,51 @@
         render: function () {
             TemplateView.prototype.render.apply(this, arguments);
             this.$el.css('order', this.task.get('order'));
+        },
+        details: function () {
+            var view = new TaskDetailView({task: this.task});
+            this.$el.before(view.el);
+            this.$el.hide();
+            view.render();
+            view.on('done', function () {
+                this.$el.show();
+            }, this);
+        }
+    });
+
+    var TaskDetailView = FormView.extend({
+        tagName: 'div',
+        className: 'task-detail',
+        templateName: '#task-detail-template',
+        events: _.extend({
+            'click button.cancel': 'done',
+            'blur [data-field][contenteditable=true]': 'editField'
+        }, FormView.prototype.events),
+        initialize: function (options) {
+            FormView.prototype.initialize.apply(this, arguments);
+            this.task = options.task;
+            this.changes = {};
+            $('button.save', this.$el).hide();
+            this.task.on('change', this.render, this);
+            this.task.on('remove', this.remove, this);
+        },
+        getContext: function () {
+            return {task: this.task, empty: '-----'};
+        },
+        submit: function (event) {
+            FormView.prototype.submit.apply(this, arguments);
+            this.task.save(this.changes, {
+                wait: true,
+                success: $.proxy(this.success, this),
+                error: $.proxy(this.modelFailure, this)
+            });
+        },
+        editField: function (event) {
+            var $this = $(event.currentTarget);
+            var value = $this.text().replace(/^\s+|\s+$/g, '');
+            var field = $this.data('field');
+            this.changes[field] = value;
+            $('button.save', this.$el).show();
         }
     });
 
