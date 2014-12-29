@@ -86,12 +86,52 @@
             this._previous = response.previous;
             this._count = response.count;
             return response.results || [];
+        },
+        getOrFetch: function (id) {
+            var result = new $.Deferred(), model = this.get(id);
+            if (!model) {
+                model = this.push({id: id});
+                model.fetch({
+                    success: function (model, response, options) {
+                        result.resolve(model);
+                    },
+                    error: function (model, response, options) {
+                        result.reject(model, response);
+                    }
+                });
+            } else {
+                result.resolve(model);       
+            }
+            return result;
         }
     });
 
     app.session = new Session();
-    app.models.Sprint = BaseModel.extend({});
-    app.models.Task = BaseModel.extend({});
+    app.models.Sprint = BaseModel.extend({
+        fetchTasks: function () {
+            var links = this.get('links');
+            if (links && links.tasks) {
+                app.tasks.fetch({url: links.tasks, remove: false});
+            }
+        }
+    });
+    app.models.Task = BaseModel.extend({
+        statusClass: function () {
+            var sprint = this.get('sprint'), status;
+            if (!sprint) {
+                status = 'unassigned';
+            } else {
+                status = ['todo', 'active', 'testing', 'done'][this.get('status') - 1];
+            }
+            return status;
+        },
+        inBacklog: function () {
+            return !this.get('sprint');
+        },
+        inSprint: function (sprint) {
+            return sprint.get('id') == this.get('sprint')
+        }
+    });
     app.models.User = BaseModel.extend({
         idAttributemodel: 'username'
     });
@@ -104,8 +144,11 @@
         });
         app.sprints = new app.collections.Sprints();
         app.collections.Tasks = BaseCollection.extend({
-            model: app.models.User,
-            url: data.users
+            model: app.models.Task,
+            url: data.tasks,
+            getBacklog: function () {
+                this.fetch({remove: false, data: {backlog: 'True'}});
+            }
         });
         app.tasks = new app.collections.Tasks();
         app.collections.Users = BaseCollection.extend({
