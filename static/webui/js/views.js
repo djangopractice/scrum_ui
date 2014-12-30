@@ -142,6 +142,24 @@
             var field = $this.data('field');
             this.changes[field] = value;
             $('button.save', this.$el).show();
+        },
+        showErrors: function (errors) {
+            _.map(errors, function (fieldErrors, name) {
+                var field = $('[data-fields=' + name + ']', this.$el);
+                if (field.length === 0) {
+                    field = $('[data-field]', this.$el).first();
+                }
+                function appendError(msg) {
+                    var parent = field.parent('width-label');
+                    var error = this.errorTemplate({msg: msg});
+                    if (parent.length === 0) {
+                        field.before(error);
+                    } else {
+                        parent.before(error);
+                    }
+                }
+                _.map(fieldErrors, appendError, this);
+            }, this);
         }
     });
 
